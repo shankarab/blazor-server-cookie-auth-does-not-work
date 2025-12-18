@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>BlazorAuth</name>
+    </assembly>
+    <members>
+        <member name="T:BlazorAuth.Services.AuthService">
+            <summary>
+            Authentication service implementation
+            </summary>
+        </member>
+        <member name="M:BlazorAuth.Services.AuthService.ValidateUser(System.String,System.String)">
+            <summary>
+            Validates user credentials
+            </summary>
+        </member>
+        <member name="T:BlazorAuth.Services.IAuthService">
+            <summary>
+            Authentication service interface
+            </summary>
+        </member>
+        <member name="M:BlazorAuth.Services.IAuthService.ValidateUser(System.String,System.String)">
+            <summary>
+            Validates user credentials
+            </summary>
+        </member>
+        <member name="T:BlazorAuth.Startup.Program">
+            <summary>
+            Main program entry point
+            </summary>
+        </member>
+        <member name="M:BlazorAuth.Startup.Program.Main(System.String[])">
+            <summary>
+            Main entry point
+            </summary>
+        </member>
+    </members>
+</doc>

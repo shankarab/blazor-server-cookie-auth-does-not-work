@@ -1,0 +1,126 @@
+@page "/login"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@* @rendermode InteractiveServer *@
+@attribute [AllowAnonymous]
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Login</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <h2>Login</h2>
+        
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin" FormName="LoginForm">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <InputText id="username" class="form-control" @bind-Value="loginModel.Username" />
+                <ValidationMessage For="@(() => loginModel.Username)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span>Logging in...</span>
+                }
+                else
+                {
+                    <span>Login</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="demo-credentials">
+            <h4>Demo Credentials:</h4>
+            <p>Username: <strong>admin</strong> | Password: <strong>admin123</strong></p>
+            <p>Username: <strong>user</strong> | Password: <strong>user123</strong></p>
+            <p>Username: <strong>demo</strong> | Password: <strong>demo123</strong></p>
+        </div>
+    </div>
+</div>
+
+@code {
+   [SupplyParameterFromForm] private LoginModel loginModel { get; set; }
+   private string errorMessage;
+   private bool isLoading = false;
+
+   protected override async Task OnInitializedAsync()
+   {
+
+      loginModel = new();
+      await base.OnInitializedAsync().ConfigureAwait(false);
+   }
+
+   private async Task HandleLogin()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            bool isValid = await AuthService.ValidateUser(loginModel.Username, loginModel.Password);
+
+            if (isValid)
+            {
+                List<Claim> claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, loginModel.Username),
+                    new Claim(ClaimTypes.Role, loginModel.Username == "admin" ? "Admin" : "User")
+                };
+
+                ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                AuthenticationProperties authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                };
+
+                HttpContext httpContext = HttpContextAccessor.HttpContext;
+                if (httpContext != null)
+                {
+                    await httpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity),
+                        authProperties);
+
+                    Navigation.NavigateTo("/", true);
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid username or password.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Username is required")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "Password is required")]
+        public string Password { get; set; }
+    }
+}

@@ -1,0 +1,32 @@
+@page "/"
+@attribute [AllowAnonymous]
+
+<PageTitle>Home</PageTitle>
+
+<h1>Welcome to Blazor Auth!</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="alert alert-success">
+            <h4>Hello, @context.User.Identity?.Name!</h4>
+            <p>You are successfully authenticated.</p>
+            <p>Role: <strong>@(context.User.IsInRole("Admin") ? "Admin" : "User")</strong></p>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-warning">
+            <p>You are not logged in.  Please <a href="/login">login</a>.</p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+<div class="content">
+    <h3>About this application: </h3>
+    <ul>
+        <li>✅ Blazor Server-side with interactive rendering</li>
+        <li>✅ Cookie-based authentication</li>
+        <li>✅ Protected pages with [Authorize] attribute</li>
+        <li>✅ User session management</li>
+        <li>✅ Login/Logout functionality</li>
+    </ul>
+</div>
